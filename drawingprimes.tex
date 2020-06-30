@@ -1,0 +1,142 @@
+\documentclass{standalone}
+\usepackage{luacode}
+\usepackage{tikz}
+
+\title{Primes}
+\author{Peter Rowlett}
+\date{June 2020}
+
+% define some colours
+% http://latexcolor.com/
+\definecolor{aureolin}{rgb}{0.99, 0.93, 0.0}
+\definecolor{amethyst}{rgb}{0.6, 0.4, 0.8}
+\definecolor{beaublue}{rgb}{0.74, 0.83, 0.9}
+\definecolor{applegreen}{rgb}{0.55, 0.71, 0.0}
+\definecolor{bleudefrance}{rgb}{0.19, 0.55, 0.91}
+\definecolor{atomictangerine}{rgb}{1.0, 0.6, 0.4}
+\definecolor{babypink}{rgb}{0.96, 0.76, 0.76}
+\definecolor{blizzardblue}{rgb}{0.67, 0.9, 0.93}
+\definecolor{blue-violet}{rgb}{0.54, 0.17, 0.89}
+\definecolor{bostonuniversityred}{rgb}{0.8, 0.0, 0.0}
+\definecolor{brass}{rgb}{0.71, 0.65, 0.26}
+\definecolor{lawngreen}{rgb}{0.49, 0.99, 0.0}
+\definecolor{brightcerulean}{rgb}{0.11, 0.67, 0.84}
+\definecolor{brightpink}{rgb}{1.0, 0.0, 0.5}
+\definecolor{cadetblue}{rgb}{0.37, 0.62, 0.63}
+\definecolor{cadmiumorange}{rgb}{0.93, 0.53, 0.18}
+\definecolor{caputmortuum}{rgb}{0.35, 0.15, 0.13}
+\definecolor{celadon}{rgb}{0.67, 0.88, 0.69}
+\definecolor{chocolate(traditional)}{rgb}{0.48, 0.25, 0.0}
+\definecolor{cinereous}{rgb}{0.6, 0.51, 0.48}
+\definecolor{coolblack}{rgb}{0.0, 0.18, 0.39}
+\definecolor{mediumspringbud}{rgb}{0.79, 0.86, 0.54}
+\definecolor{lemonchiffon}{rgb}{1.0, 0.98, 0.8}
+\definecolor{lightkhaki}{rgb}{0.94, 0.9, 0.55}
+\definecolor{macaroniandcheese}{rgb}{1.0, 0.74, 0.53}
+\definecolor{magicmint}{rgb}{0.67, 0.94, 0.82}
+
+\definecolor{bittersweet}{rgb}{1.0, 0.44, 0.37}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{luacode*}
+    -- setup
+    
+    -- hard-coded colours, which are therefore limited
+    -- I am not sure these are sufficiently distinct or in a good order
+    colours = {"lightgray", "aureolin", "amethyst", "beaublue", "applegreen", "bleudefrance", "atomictangerine", "babypink","blizzardblue","bostonuniversityred","brass","lawngreen","brightcerulean","brightpink","cadetblue","cadmiumorange","caputmortuum","celadon","chocolate(traditional)","cinereous","coolblack","mediumspringbud","lemonchiffon","lightkhaki","macaroniandcheese","magicmint"}
+    runoutofcolour = "bittersweet" -- backup colour used when colours is empy
+    primecolours = {} -- used for collecting the prime colours in use
+
+    -- ideally, target is divisible by rowlength, otherwise there is a partial row at the bottom
+    -- suggested, either sqrt target (rounded down) to get rowlength, or fix rowlength and make target a multiple of it
+    target = 100 -- how many to do
+    rowlength=math.floor(math.sqrt(target)) -- used to arrange into a roughly-square grid
+    --rowlength = 10 -- fixed length row
+    --target = rowlength * 14
+    
+    -- picture is scaled as the number of digits of target increases so the inner circles are the right size for the numbers
+    scale = 1.5 + string.len(target)/10 -- how spread apart the circles are
+    scale2 = 1 + string.len(target)/10 -- how big the circles are
+    
+    -- quick sieve of the numbers up to target, storing their factors
+    
+    factorsof = {}
+    
+    factorsof[1] = {[1] = 1} -- 1 is weird
+    primecolours[1] = table.remove(colours,1) -- lightgray
+    
+    for n=2,target do
+        if factorsof[n] == nil then -- n is not current stored, so must be prime
+            factorsof[n] = {[1] = n} -- store itself as its non-1 factor
+            if colours[1] == nil then -- if run out of colours, use the backup colour
+                primecolours[n] = runoutofcolour
+            else -- use the next colour on the list
+                primecolours[n] = table.remove(colours,1)
+            end
+            m=2 -- loop counter
+            while m*n <= target do
+                if factorsof[m] then -- loop over numbers already stored (which aren't necessarily sequential)
+                    factorsof[m*n] = {} -- haven't got m*n stored because haven't got there yet
+                    numfactors = #factorsof[m]
+                    for i=1,numfactors do -- copy m's factors
+                        factorsof[m*n][i] = factorsof[m][i]
+                    end
+                    factorsof[m*n][numfactors+1] = n -- add n as additional factor
+                end
+                m=m+1
+            end
+        end
+    end
+    
+    -- draw the numbers
+    
+    for num,factors in ipairs(factorsof) do
+        numfactors = #factors
+        
+        -- work out centre of this number and set as tikz \coordinate
+        row = 1
+        col = num
+        while col>rowlength do
+            row=row+1
+            col=col-rowlength
+        end
+        tex.print("\\coordinate (" .. num .. ") at (" .. col*scale .. ",-" .. row*scale .. ");")
+        
+        if numfactors==1 then -- if prime, draw a full circle
+            tex.print("\\draw[fill=" .. primecolours[num] .. "] (" .. num .. ") circle [radius=" .. 6*scale2 .. "mm];")
+        else -- if not prime, draw segments
+            tex.print("\\draw (" .. num .. ") circle [radius=" .. 6*scale2 .. "mm];") -- blank circle
+            
+            -- work out numfactors number of arcs
+            arcsize = 360/numfactors
+            theta=90 -- start at the top of the circle
+            for arc = 1,numfactors do -- need an arc for each factor
+                -- where to start the arc, bit of trig
+                -- N.B. lua works in radians, but tikz works in degrees
+                if theta <= 90 then
+                    coords = "(" .. col*scale+0.6*scale2*math.cos(math.rad(theta)) .. ",-" .. row*scale-0.6*scale2*math.sin(math.rad(theta)) .. ")"
+                elseif theta <= 180 then
+                    coords = "(" .. col*scale-0.6*scale2*math.cos(math.rad(180-theta)) .. ",-" .. row*scale-0.6*scale2*math.sin(math.rad(180-theta)) .. ")"
+                elseif theta <= 270 then
+                    coords = "(" .. col*scale-0.6*scale2*math.cos(math.rad(theta-180)) .. ",-" .. row*scale+0.6*scale2*math.sin(math.rad(theta-180)) .. ")"
+                else
+                    coords = "(" .. col*scale+0.6*scale2*math.cos(math.rad(theta)) .. ",-" .. row*scale-0.6*scale2*math.sin(math.rad(theta)) .. ")"
+                end
+                
+                -- now draw the arc
+                tex.print("\\filldraw[fill=" .. primecolours[factors[arc]] .. "] (" .. col*scale .. ",-" .. row*scale .. ") -- " .. coords .. " arc (" .. theta .. ":" .. theta+arcsize .. ":" .. 6*scale2 .. "mm) -- (" .. col*scale .. ",-" .. row*scale .. ");")
+                
+                theta = theta+arcsize -- increase angle to next segment
+            end
+            
+        end
+        
+        -- finally, draw a white circle in the middle with the number on it
+        tex.print("\\draw[fill=white]  (" .. num .. ") circle [radius=" .. 3*scale2 .. "mm];")
+        tex.print("\\node at (" .. num .. ") {" .. num .. "};")
+        --tex.print("\\\\")
+    end
+\end{luacode*}
+\end{tikzpicture}
+\end{document}
