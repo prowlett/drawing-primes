@@ -20,7 +20,7 @@ A bunch of colours are hard-coded into a list which are used to colour the prime
 1. there are fewer colours than there are prime numbers (hard to fix);
 2. colours could be checked to be more distinct and in a better order, so adjacent primes are definitely differently-coloured. 
 
-A partial-fix for 1. is that when the list of colours is exhausted, the code uses `runoutofcolour` for all remaining primes. An issue with this is that if primes p~1~ and p~2~ are coloured the same, their product p~1~p~2~ (if it appears in the grid) will be coloured in two halves using the same colour for each half. 
+A partial-fix for 1. is that when the list of colours is exhausted, the code uses `runoutofcolour` for all remaining primes. An issue with this is that if primes p<sub>1</sub> and p<sub>2</sub> are coloured the same, their product p<sub>1</sub>p<sub>2</sub> (if it appears in the grid) will be coloured in two halves using the same colour for each half. 
 
 Things that could be done:
 - sort out the colours that are used;
