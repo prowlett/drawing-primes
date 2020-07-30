@@ -44,7 +44,7 @@
     
     -- hard-coded colours, which are therefore limited
     -- I am not sure these are sufficiently distinct or in a good order
-    colours = {"lightgray", "aureolin", "amethyst", "beaublue", "applegreen", "bleudefrance", "atomictangerine", "babypink","blizzardblue","bostonuniversityred","brass","lawngreen","brightcerulean","brightpink","cadetblue","cadmiumorange","caputmortuum","celadon","chocolate(traditional)","cinereous","coolblack","mediumspringbud","lemonchiffon","lightkhaki","macaroniandcheese","magicmint"}
+    colours = {"lightgray","aureolin","amethyst","beaublue","applegreen","bleudefrance","atomictangerine","babypink","blizzardblue","bostonuniversityred","brass","lawngreen","brightcerulean","brightpink","cadetblue","cadmiumorange","caputmortuum","celadon","chocolate(traditional)","cinereous","coolblack","mediumspringbud","lemonchiffon","lightkhaki","macaroniandcheese","magicmint"}
     runoutofcolour = "bittersweet" -- backup colour used when colours is empy
     primecolours = {} -- used for collecting the prime colours in use
 
@@ -52,8 +52,8 @@
     -- suggested, either sqrt target (rounded down) to get rowlength, or fix rowlength and make target a multiple of it
     target = 100 -- how many to do
     rowlength=math.floor(math.sqrt(target)) -- used to arrange into a roughly-square grid
-    --rowlength = 10 -- fixed length row
-    --target = rowlength * 14
+    -- rowlength = 10 -- fixed length row
+    -- target = rowlength * 14
     
     -- picture is scaled as the number of digits of target increases so the inner circles are the right size for the numbers
     scale = 1.5 + string.len(target)/10 -- how spread apart the circles are
